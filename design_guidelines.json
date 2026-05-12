@@ -1,0 +1,90 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 1 + 5 (Luxury Organic / Earthy Jewel)",
+  "brand_identity": {
+    "name": "Sunya",
+    "tagline": "Premium dehydrated fruits with zero sugar, zero preservatives. Hand-selected, slow-dehydrated, export-grade quality from Nepal.",
+    "logo": "SUNYA (Bold, non-italic, tracking-tight, uppercase)"
+  },
+  "colors": {
+    "primary": "#00C950",
+    "primary_dark": "#00A040",
+    "secondary": "#FFD700",
+    "background": "#FAF9F6",
+    "surface": "#FFFFFF",
+    "surface_glass": "rgba(250, 249, 246, 0.7)",
+    "text_primary": "#333333",
+    "text_secondary": "#5C5C5C",
+    "border": "rgba(51, 51, 51, 0.1)",
+    "success": "#00C950",
+    "warning": "#FFD700",
+    "error": "#FF3B30",
+    "shimmer_gradient": "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)"
+  },
+  "typography": {
+    "heading_font": "Playfair Display",
+    "body_font": "Outfit",
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl font-bold tracking-tight leading-none font-serif text-[#333333]",
+      "h2": "text-3xl sm:text-4xl font-bold tracking-tight leading-tight font-serif text-[#333333]",
+      "h3": "text-xl sm:text-2xl font-semibold leading-snug font-serif text-[#333333]",
+      "body": "text-base leading-relaxed font-sans text-[#5C5C5C]",
+      "small": "text-sm tracking-wide font-sans text-[#5C5C5C]",
+      "overline": "text-xs uppercase tracking-[0.2em] font-sans font-semibold text-[#00A040]"
+    }
+  },
+  "layout_and_spacing": {
+    "philosophy": "Generous Spacing (p-8 to p-24), Asymmetrical Bento Grid for Marketing, Dense Control Room for Dashboard",
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "section_gap": "py-20 md:py-32 gap-16 md:gap-24",
+    "border_radius": "rounded-2xl for main cards, rounded-full for buttons and pills",
+    "shadows": {
+      "soft": "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+      "glow": "shadow-[0_0_20px_rgba(0,201,80,0.2)]"
+    }
+  },
+  "animations": {
+    "philosophy": "40+ Premium Animations (Framer Motion)",
+    "effects": {
+      "hover_scale": "whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 400, damping: 10 }}",
+      "slide_up": "initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, ease: 'easeOut' }}",
+      "shimmer_cta": "CSS mask-image animation sweeping left to right over the button",
+      "float": "animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}",
+      "pulse": "animate={{ scale: [1, 1.05, 1] }} transition={{ repeat: Infinity, duration: 2 }}",
+      "bounce": "whileTap={{ scale: 0.95 }}",
+      "glass_reveal": "backdrop-blur-xl transitioning in smoothly on scroll"
+    }
+  },
+  "components": {
+    "header": "Sticky with scroll detection. Transparent at top, morphs to backdrop-blur-xl bg-[#FAF9F6]/80 with border-b border-[#333333]/5 when scrolling.",
+    "buttons": "Primary: #00C950 background, #FFFFFF text, rounded-full, px-8 py-4. Incorporate shimmer animation. Secondary: border border-[#00C950] text-[#00A040] rounded-full.",
+    "product_card": "Clean ivory background. Product image dominates (zoom on hover). Details aligned left. Floating 'Add' button.",
+    "pricing_selector": "Gram-based pills (100g, 200g, 300g, 400g, 500g, 1kg). Highlight bulk savings dynamically below pills. Active state: bg-[#00C950] text-white.",
+    "chatbot_widget": "Bottom-right fixed. Circular launch button with pulse effect. Chat window has glassmorphism, slide-up entrance, and streams AI responses.",
+    "sunya_care_panel": "Personalized nutrition dashboard. Inputs for age/gender/height/weight/health goals. Outputs nutrition rings (protein/carbs/fats/fiber), recommended daily fruit package, and unsafe foods warnings in a Bento Grid layout.",
+    "admin_dashboard": "Sidebar navigation. Dense table layout for orders. High contrast data cards (Archetype 4 utility style).",
+    "quality_badges": "Circular icon badges with text (Zero Sugar, Zero Preservatives, Export Grade) using muted gold (#FFD700) accents."
+  },
+  "media": {
+    "hero_landscape": "https://images.unsplash.com/photo-1612031326777-1391836af889?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxuZXBhbCUyMGhpbWFsYXlhcyUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3Nzg1NzgzOTF8MA&ixlib=rb-4.1.0&q=85",
+    "hero_fruits": "https://images.unsplash.com/photo-1542562504-963dc9feead5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxkcmllZCUyMGZydWl0cyUyMGZsYXRsYXl8ZW58MHx8fHwxNzc4NTc4MzkxfDA&ixlib=rb-4.1.0&q=85",
+    "product_kiwi": "https://images.unsplash.com/photo-1752007085692-94d58e79b722?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwyfHxkcmllZCUyMGtpd2klMjBzbGljZXN8ZW58MHx8fHwxNzc4NTc4NDIxfDA&ixlib=rb-4.1.0&q=85",
+    "product_pineapple": "https://images.unsplash.com/photo-1614963366795-973eb8748ebb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTB8MHwxfHNlYXJjaHw0fHxkcmllZCUyMHBpbmVhcHBsZSUyMHNsaWNlc3xlbnwwfHx8fDE3Nzg1Nzg0MjF8MA&ixlib=rb-4.1.0&q=85",
+    "product_mango": "https://images.unsplash.com/photo-1686204040685-f7a2bc30d1fd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwzfHxkcmllZCUyMG1hbmdvJTIwc2xpY2VzfGVufDB8fHx8MTc3ODU3ODQyMXww&ixlib=rb-4.1.0&q=85",
+    "product_apple": "https://images.unsplash.com/photo-1760533535534-c69f637df2e6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwyfHxkcmllZCUyMG1hbmdvJTIwc2xpY2VzfGVufDB8fHx8MTc3ODU3ODQyMXww&ixlib=rb-4.1.0&q=85"
+  },
+  "testing": {
+    "requirements": "All interactive and key informational elements MUST include data-testid attribute. Convention: kebab-case, role-based. e.g., data-testid='add-to-cart-button'"
+  },
+  "instructions_to_main_agent": [
+    "You are building a premium Next.js/React e-commerce application.",
+    "Use Tailwind CSS for all styling and Framer Motion for the 40+ required animations (shimmer, float, slide-up, etc.).",
+    "Ensure the application strictly follows the ivory, deep green, and muted gold palette.",
+    "Implement pure HTML/Tailwind for the marketing layout, avoiding rigid generic cards. Use Shadcn UI logic for forms, selects, and dialogs.",
+    "The product pricing MUST be dynamic based on the selected gram weight (100g to 1kg) with visual indicators for bulk savings.",
+    "Build the SUNYA Care panel as a multi-step form leading to an AI-curated nutrition dashboard with circular progress rings (use Recharts or custom SVG).",
+    "Include a functional shopping cart drawer and checkout flow.",
+    "Do NOT use placeholder image URLs. Only use the verified URLs provided in the media section of this JSON.",
+    "Ensure typography matches the Playfair Display (headings) and Outfit (body) pairing via Google Fonts."
+  ]
+}
