@@ -1,0 +1,46 @@
+{
+  "summary": "Full e2e testing for Sunya Nepal dried-fruits e-commerce. 21/21 backend pytest pass; all critical frontend flows (auth, PDP, cart, checkout w/ promo, order placement, SUNYA Care multi-step, admin orders + status update, Claude chatbot multi-turn) verified end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "global", "issues": ["Emergent 'Made with Emergent' badge anchor (a#emergent-badge) overlaps the bottom-right floating chat button; pointer events intercepted in some viewports. Already a known platform overlay — non-blocking for users since chat button is large enough to click but worth noting."]},
+      {"screen": "Post-login toast", "issues": ["After login the 'Welcome back!' toast renders on top of header nav links, partially blocking nav text for ~3 seconds (see screenshot from first run). Cosmetic only."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Cosmetic) Position success/info toasts away from sticky header so they don't overlap nav links.",
+    "(Optional) Consider auto-closing the cart drawer when user clicks 'Login' or other header links — currently cart-drawer-backdrop intercepts header clicks while open (worked around in tests, but real users could find the cart drawer 'sticky').",
+    "(Nice to have) After successful Add-to-cart, the floating Emergent badge sits at the same bottom-right corner as the chat FAB — consider raising chat z-index above the badge anchor."
+  ],
+  "critical_code_review_comments": [
+    "server.py is ~700 lines — getting close to the size threshold; consider splitting into routers/auth.py, routers/products.py, routers/orders.py, routers/chat.py, routers/care.py for maintainability.",
+    "PROMO_CODES is duplicated in /api/promo/validate and /api/orders — single source of truth is fine but consider moving to a constants module.",
+    "Chat endpoint builds history_text inline and ALSO has a stub `for m in history_doc[...]: pass` block (lines 538-543) that is dead code — should be removed.",
+    "Order endpoint silently accepts invalid promo codes (treats them as 0% discount) instead of returning 400 — consider rejecting unknown codes when promo_code is provided.",
+    "create_order doesn't validate unit_price against product catalog — a malicious client can post any unit_price (trust client). For production, recompute unit_price server-side from product_id + selected_grams.",
+    "JWT_SECRET in .env has a default literal hint; ensure production deploy overrides it.",
+    "All FastAPI HTTP statuses, validation, async/await usage and Mongo _id exclusion look correct."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {
+    "backend": "100% (21/21)",
+    "frontend": "100% (auth, PDP gram pricing, add to cart, cart drawer, checkout, promo WELCOME15 → discounted total NPR 3,825 from NPR 4,500, order success, SUNYA Care multi-step with diabetes warning, account orders list = 4 rows, admin orders = 4 rows, status update, Claude chatbot multi-turn memory)"
+  },
+  "test_credentials": "Demo: demo@sunya.com.np / Demo@Sunya2026 — Admin: admin@sunya.com.np / Admin@Sunya2026 (both seeded automatically on backend startup)",
+  "seed_data_creation": "Seed runs on backend startup (6 products + admin + demo). No additional seed needed.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend pytest at /app/backend/tests/backend_test.py — run: `pytest /app/backend/tests/backend_test.py -v`. Note: signup test uses @example.com (pydantic EmailStr rejects .test/.local TLDs). Chat tests take 30-60s due to Claude latency. Cart drawer auto-opens after Add-to-cart and its backdrop intercepts header clicks — always close it or login BEFORE adding to cart in playwright flows. Emergent badge (#emergent-badge) can intercept floating-chat-btn clicks; remove via page.evaluate before testing chat.",
+  "rca of the issue": "No bugs found. All listed test cases pass."
+}
