@@ -420,7 +420,29 @@ FREE_SHIP_THRESHOLD = 3000
 async def create_order(body: OrderCreate, user: Optional[dict] = Depends(get_current_user)):
     if not body.items:
         raise HTTPException(status_code=400, detail="Cart is empty")
-    subtotal = sum(it.unit_price * it.quantity for it in body.items)
+
+    # Recompute unit_price server-side from product catalog (trust no client)
+    product_ids = list({it.product_id for it in body.items})
+    products_docs = await db.products.find({"id": {"$in": product_ids}}, {"_id": 0}).to_list(100)
+    by_id = {p["id"]: p for p in products_docs}
+    validated_items = []
+    for it in body.items:
+        prod = by_id.get(it.product_id)
+        if not prod:
+            raise HTTPException(status_code=400, detail=f"Unknown product: {it.product_id}")
+        tier = next((g for g in prod["gram_pricing"] if g["grams"] == it.selected_grams), None)
+        if not tier:
+            raise HTTPException(status_code=400, detail=f"Invalid pouch size for {prod['name']}")
+        validated_items.append({
+            "product_id": it.product_id,
+            "name": prod["name"],
+            "selected_grams": it.selected_grams,
+            "quantity": max(1, int(it.quantity)),
+            "unit_price": int(tier["price"]),
+            "image": prod.get("image"),
+        })
+
+    subtotal = sum(it["unit_price"] * it["quantity"] for it in validated_items)
     discount_pct = PROMO_CODES.get((body.promo_code or "").strip().upper(), 0)
     discount = int(subtotal * discount_pct / 100)
     shipping = 0 if (subtotal - discount) >= FREE_SHIP_THRESHOLD else SHIPPING_FLAT
@@ -430,7 +452,7 @@ async def create_order(body: OrderCreate, user: Optional[dict] = Depends(get_cur
         "id": str(uuid.uuid4()),
         "user_id": user["id"] if user else None,
         "user_email": user["email"] if user else None,
-        "items": [it.model_dump() for it in body.items],
+        "items": validated_items,
         "subtotal": subtotal,
         "discount": discount,
         "shipping": shipping,
@@ -533,14 +555,6 @@ async def chat(body: ChatRequest):
         session_id=body.session_id,
         system_message=SUNYA_SYSTEM_PROMPT,
     ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-
-    # Replay prior messages into the chat instance so it has multi-turn memory
-    if history_doc and history_doc.get("messages"):
-        for m in history_doc["messages"]:
-            # We only need to send prior user messages; assistant turns will be reconstructed
-            # by sending each user msg. But to keep latency low, instead we pass full history
-            # as a single combined context in the new user message. Simpler:
-            pass
 
     # Build a context-enriched message including last 6 turns for memory
     history_text = ""
