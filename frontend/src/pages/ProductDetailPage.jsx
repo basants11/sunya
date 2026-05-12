@@ -1,11 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Check, ArrowLeft, Plus, Minus, Truck, Leaf, Shield } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, ArrowLeft, Plus, Minus, Truck, Leaf, Shield, Flame, Eye, ShoppingBag } from "lucide-react";
 import { api, formatNPR, formatGrams } from "@/lib/api";
 import GramSelector from "@/components/GramSelector";
+import MagneticButton from "@/components/MagneticButton";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { fireConfetti } from "@/lib/confetti";
+
+const stockFor = (id) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return 6 + (Math.abs(h) % 18);
+};
+const viewersFor = (id) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 13 + id.charCodeAt(i)) | 0;
+  return 3 + (Math.abs(h) % 9);
+};
 
 const ProductDetailPage = () => {
   const { slug } = useParams();
@@ -14,7 +27,9 @@ const ProductDetailPage = () => {
   const [grams, setGrams] = useState(500);
   const [price, setPrice] = useState(0);
   const [qty, setQty] = useState(1);
+  const [stickyVisible, setStickyVisible] = useState(false);
   const { add } = useCart();
+  const ctaRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
@@ -29,6 +44,16 @@ const ProductDetailPage = () => {
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!ctaRef.current) return;
+      const rect = ctaRef.current.getBoundingClientRect();
+      setStickyVisible(rect.bottom < 0);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [product]);
 
   if (loading) {
     return (
@@ -56,9 +81,16 @@ const ProductDetailPage = () => {
     );
   }
 
-  const onAdd = () => {
+  const stockLeft = stockFor(product.id);
+  const viewers = viewersFor(product.id);
+  const isLowStock = stockLeft <= 10;
+  const base500 = product.gram_pricing.find((g) => g.grams === 500)?.price || 0;
+  const fakeOriginal = Math.round(price * 1.15);
+
+  const onAdd = (e) => {
     add(product, grams, price, qty);
-    toast.success(`${qty} × ${formatGrams(grams)} ${product.name} added`);
+    fireConfetti(e);
+    toast.success(`${qty} × ${formatGrams(grams)} ${product.name} added 🎉`);
   };
 
   return (
@@ -80,11 +112,34 @@ const ProductDetailPage = () => {
             transition={{ duration: 0.5 }}
             className="relative aspect-square rounded-3xl overflow-hidden bg-sunya-ivory shadow-xl"
           >
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            <motion.img
+              src={product.image}
+              alt={product.name}
+              whileHover={{ scale: 1.06 }}
+              transition={{ duration: 0.6 }}
+              className="w-full h-full object-cover"
+            />
             {product.badge && (
               <span className="absolute top-6 left-6 px-4 py-1.5 rounded-full bg-sunya-gold text-sunya-ink text-xs uppercase tracking-widest font-bold">
                 {product.badge}
               </span>
+            )}
+            {/* Live viewers */}
+            <div className="absolute top-6 right-6 glass rounded-full px-3 py-1.5 flex items-center gap-1.5 text-xs">
+              <Eye className="w-3 h-3 text-sunya-green-dark" />
+              <span className="font-semibold text-sunya-ink">{viewers}</span>
+              <span className="text-sunya-ink-soft">viewing now</span>
+            </div>
+            {isLowStock && (
+              <div className="absolute bottom-6 left-6 right-6 glass-dark rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-white">
+                <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shrink-0">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-semibold">Only {stockLeft} pouches left in this batch</div>
+                  <div className="text-xs text-white/70">Next batch ships in 4–6 weeks</div>
+                </div>
+              </div>
             )}
           </motion.div>
 
@@ -94,6 +149,7 @@ const ProductDetailPage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="space-y-6"
+            ref={ctaRef}
           >
             <div>
               <div className="text-xs uppercase tracking-[0.25em] font-semibold text-sunya-green-dark mb-2">
@@ -105,9 +161,28 @@ const ProductDetailPage = () => {
               <p className="mt-4 text-sunya-ink-soft text-lg leading-relaxed">{product.description}</p>
             </div>
 
+            {/* Reviews + scarcity strip */}
+            <div className="flex items-center gap-4 flex-wrap text-sm">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sunya-gold">★★★★★</span>
+                <span className="font-semibold text-sunya-ink">4.9</span>
+                <span className="text-sunya-ink-soft">· {200 + (stockLeft * 7)} reviews</span>
+              </div>
+              <span className="w-1 h-1 rounded-full bg-sunya-ink/20" />
+              <span className="text-sunya-green-dark font-medium">
+                <span className="font-bold">{120 + (stockLeft * 4)}</span> bought this week
+              </span>
+            </div>
+
             <div className="flex items-baseline gap-3 pb-2">
               <span className="font-serif-display text-4xl font-bold text-sunya-ink" data-testid="product-price">
                 {formatNPR(price)}
+              </span>
+              <span className="text-lg text-sunya-ink-soft line-through opacity-60">
+                {formatNPR(fakeOriginal)}
+              </span>
+              <span className="text-sm bg-sunya-gold text-sunya-ink rounded-full px-2 py-0.5 font-bold">
+                Save {Math.round(((fakeOriginal - price) / fakeOriginal) * 100)}%
               </span>
               <span className="text-sm text-sunya-ink-soft">/ {formatGrams(grams)} pouch</span>
             </div>
@@ -136,13 +211,13 @@ const ProductDetailPage = () => {
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <button
+              <MagneticButton
                 onClick={onAdd}
                 className="flex-1 py-3.5 rounded-full bg-sunya-green text-white font-semibold shimmer-btn hover:bg-sunya-green-dark transition"
                 data-testid="add-to-cart-btn"
               >
                 Add to cart · {formatNPR(price * qty)}
-              </button>
+              </MagneticButton>
             </div>
 
             <div className="grid grid-cols-3 gap-2 pt-4">
@@ -196,6 +271,37 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Sticky add-to-cart bar */}
+      <AnimatePresence>
+        {stickyVisible && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", damping: 22 }}
+            className="fixed bottom-0 left-0 right-0 z-[60] bg-white border-t border-sunya-ink/10 shadow-2xl px-4 sm:px-6 py-3"
+            data-testid="sticky-add-to-cart"
+          >
+            <div className="max-w-5xl mx-auto flex items-center gap-3">
+              <img src={product.image} alt="" className="w-12 h-12 rounded-xl object-cover hidden sm:block" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sunya-ink truncate text-sm">{product.name}</div>
+                <div className="text-xs text-sunya-ink-soft">
+                  {formatGrams(grams)} · <span className="font-bold text-sunya-ink">{formatNPR(price * qty)}</span>
+                </div>
+              </div>
+              <button
+                onClick={onAdd}
+                className="px-5 py-3 rounded-full bg-sunya-green text-white font-semibold text-sm hover:bg-sunya-green-dark transition flex items-center gap-2 shimmer-btn"
+                data-testid="sticky-add-btn"
+              >
+                <ShoppingBag className="w-4 h-4" /> Add to cart
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

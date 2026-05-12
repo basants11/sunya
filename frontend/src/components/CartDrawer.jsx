@@ -1,13 +1,30 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatNPR, formatGrams } from "@/lib/api";
+import { fireMilestoneConfetti } from "@/lib/confetti";
+
+const FREE_SHIP = 3000;
 
 const CartDrawer = () => {
   const { items, isOpen, close, updateQty, remove, subtotal } = useCart();
   const navigate = useNavigate();
+  const wasUnder = useRef(true);
+
+  // Milestone confetti when subtotal crosses free-shipping threshold
+  useEffect(() => {
+    if (subtotal >= FREE_SHIP && wasUnder.current && isOpen) {
+      fireMilestoneConfetti();
+      wasUnder.current = false;
+    } else if (subtotal < FREE_SHIP) {
+      wasUnder.current = true;
+    }
+  }, [subtotal, isOpen]);
+
+  const shipPct = Math.min(100, (subtotal / FREE_SHIP) * 100);
+  const unlocked = subtotal >= FREE_SHIP;
 
   return (
     <AnimatePresence>
@@ -108,16 +125,36 @@ const CartDrawer = () => {
 
             {items.length > 0 && (
               <div className="border-t border-sunya-ink/5 p-6 space-y-4">
+                {/* Free shipping progress */}
+                <div className="space-y-2" data-testid="free-shipping-progress">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-sunya-ink-soft flex items-center gap-1">
+                      {unlocked ? (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-sunya-gold" />
+                          <span className="font-semibold text-sunya-green-dark">Free shipping unlocked!</span>
+                        </>
+                      ) : (
+                        <>Add {formatNPR(FREE_SHIP - subtotal)} more for free shipping</>
+                      )}
+                    </span>
+                    <span className="font-mono text-sunya-ink-soft">{Math.round(shipPct)}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-sunya-ink/5 overflow-hidden">
+                    <motion.div
+                      initial={false}
+                      animate={{ width: `${shipPct}%` }}
+                      transition={{ type: "spring", stiffness: 90, damping: 20 }}
+                      className={`h-full rounded-full ${unlocked ? "bg-gradient-to-r from-sunya-green via-sunya-gold to-sunya-green animate-gradient-flow bg-[length:200%_200%]" : "bg-sunya-green"}`}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-sunya-ink-soft">Subtotal</span>
                   <span className="font-serif-display text-2xl font-bold text-sunya-ink" data-testid="cart-subtotal">
                     {formatNPR(subtotal)}
                   </span>
-                </div>
-                <div className="text-xs text-sunya-ink-soft">
-                  {subtotal >= 3000
-                    ? "🎉 Free shipping unlocked!"
-                    : `Add ${formatNPR(3000 - subtotal)} more for free shipping`}
                 </div>
                 <button
                   onClick={() => { close(); navigate("/checkout"); }}
